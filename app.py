@@ -49,7 +49,10 @@ def cluster_data():
             member_id = item['member_id']
             member_ids.append(member_id)
             processed_item = [item['age'], item['gender'], item['x_coord'], item['y_coord'], item['tv'], item['movie'], item['reading']]
-            processed_data.append(processed_item)
+            processed_data.append(processed_item)\
+        
+        app.logger.debug(f"처리된 데이터: {processed_data}")
+        app.logger.debug(f"멤버 IDs: {member_ids}")
             
         # DataPreparer 클래스의 인스턴스를 생성하여 데이터를 준비합니다.
         # preparer = DataPreparer()
@@ -59,6 +62,7 @@ def cluster_data():
         # 데이터 스케일링
         scaler = DataPreparer()
         scaled_data = scaler.scale_data(np.array(processed_data))
+        app.logger.debug(f"스케일링된 데이터: {scaled_data}")
         
         # PCA로 차원 축소를 수행합니다.
         # reducer = PCAReducer(n_components=2)
@@ -68,16 +72,20 @@ def cluster_data():
         # t-SNE를 사용하여 차원 축소
         tsne_reducer = TSNEReducer(n_components=2, random_state=42)
         reduced_data = tsne_reducer.reduce(scaled_data)
+        app.logger.debug(f"차원 축소 결과: {reduced_data}")
 
         
         # DBSCAN으로 클러스터링합니다.
         clusterer = DBSCANClusterer(eps=0.3, min_samples=5)
         clusters = clusterer.fit_predict(reduced_data)
         group_ids = clusterer.group_data_within_clusters(reduced_data, clusters, max_group_size=5)
+        app.logger.debug(f"클러스터링 결과: {clusters}")
+        app.logger.debug(f"그룹 ID: {group_ids}")
 
     # 클러스터 결과를 구조화하여 반환합니다.
         results = [{'group_id': group_id, 'member_ids': [member_ids[i] for i, gid in enumerate(group_ids) if gid == group_id]} for group_id in range(len(set(group_ids)))]
-
+        app.logger.info(f"최종 클러스터링 결과: {results}")
+        
         return jsonify(results)
     
     except Exception as e:
