@@ -55,7 +55,7 @@ def cluster_data():
     # DBSCAN으로 클러스터링합니다.
     clusterer = DBSCANClusterer(eps=0.3, min_samples=5)
     clusters = clusterer.fit_predict(reduced_data)
-    group_ids = clusterer.group_data_within_clusters(reduced_data, clusters, max_group_size=7)
+    group_ids = clusterer.group_data_within_clusters(reduced_data, clusters, max_group_size=5)
 
    # 클러스터 결과를 구조화하여 반환합니다.
     results = [{'group_id': group_id, 'member_ids': [member_ids[i] for i, gid in enumerate(group_ids) if gid == group_id]} for group_id in range(len(set(group_ids)))]
