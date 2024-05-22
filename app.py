@@ -9,6 +9,8 @@ from sklearn.manifold import TSNE
 from flask_cors import CORS
 from clustering.genetic_algorithm import GeneticAlgorithmForClustering
 
+from Extract_Keyword.keyword import extract_keywords, calculate_keyword_frequency
+
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.int64):
@@ -85,6 +87,37 @@ def cluster_data():
     except Exception as e:
         app.logger.error(f"클러스터링 중 오류 발생: {e}")
         return jsonify({'error': '클러스터링 처리 중 오류 발생'}), 500
+
+#키워드 리스트
+keywords_list= {
+    "스포츠 활동": ["축구", "농구", "테니스", "수영", "등산","날씨"],
+    "사회 및 기타 활동": ["자원봉사", "선거", "클럽", "동호회", "커뮤니티"],
+    "문화예술 관람 활동": ["공연", "전시회", "음악회", "영화", "박물관"],
+    "취미오락 활동": ["요리", "그림", "악기", "독서", "만화","역사"],
+    "휴식활동": ["스파", "산책", "명상", "온천", "바베큐"]
+}
+
+@app.route('/dialogue-data', methods=['POST'])
+def process_dialogue_data():
+    # JSON 형식으로 전달된 대화 데이터 받기
+    dialogue_data = request.json
+
+    # 대화 데이터에서 대화 부분 추출
+    dialogue = dialogue_data['dialogue']
+
+    # 키워드 추출
+    extracted_keywords = extract_keywords(dialogue)
+
+    # 키워드 빈도수 계산
+    keyword_frequency = calculate_keyword_frequency(extracted_keywords, keywords_list)
+
+    # 결과를 JSON 형태로 반환
+    return jsonify({
+        'extracted_keywords': extracted_keywords,
+        'keyword_frequency': keyword_frequency
+    })
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
