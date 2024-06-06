@@ -172,7 +172,7 @@ class GeneticAlgorithmForClustering:
         best_fitness = float('-inf')
         generations = 0
         member_ids = [point[0] for point in self.data]  # 멤버 ID 추출
-        for generation_count in range (600):  # 최대 500세대 실행
+        for generation_count in range (400):  # 최대 500세대 실행
             try:
                 fitnesses = [self.calculate_fitness(ind) for ind in self.population]
                 if not fitnesses:  # Check if fitnesses list is empty
