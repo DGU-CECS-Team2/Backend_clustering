@@ -147,15 +147,19 @@ class GeneticAlgorithmForClustering:
             return individual  # 스칼라나 다른 형태의 데이터일 경우 그대로 반환하거나 다른 처리 수행
  
         for i in range(len(individual_list)):
-            if np.random.rand() < self.mutation_rate:
-                available_choices = [item for item in range(len(self.data)) if item not in individual_set]
-                if not available_choices:  # 모든 가능한 변이가 이미 사용되었을 경우
-                    continue
-                choice = np.random.choice(available_choices)
-                individual_set.remove(individual_list[i])
-                individual_set.add(choice)
-                individual_list[i] = choice
-
+            try:
+                if np.random.rand() < self.mutation_rate:
+                    available_choices = [item for item in range(len(self.data)) if item not in individual_set]
+                    if not available_choices:  # 모든 가능한 변이가 이미 사용되었을 경우
+                        continue
+                    choice = np.random.choice(available_choices)
+                    individual_set.remove(individual_list[i])
+                    individual_set.add(choice)
+                    individual_list[i] = choice
+            except Exception as e:
+                print(f"Error occurred : {str(e)}")
+                # 관련 변수 상태 출력
+                break  # 또는 적절한 예외 처리
 
         return individual_list
     
@@ -168,43 +172,51 @@ class GeneticAlgorithmForClustering:
         best_fitness = float('-inf')
         generations = 0
         member_ids = [point[0] for point in self.data]  # 멤버 ID 추출
-        for _ in range(self.cluster_size):  # 최대 1000세대 실행
-            fitnesses = [self.calculate_fitness(ind) for ind in self.population]
-            if not fitnesses:  # Check if fitnesses list is empty
-                break
-            
-            best_current_fitness = max(fitnesses)
-            if best_fitness == float('-inf'):
-                best_fitness = best_current_fitness - 1 
-            if best_current_fitness > best_fitness:
-                if (best_current_fitness - best_fitness) / abs(best_fitness) < 0.01:
-                    generations += 1
-                else:
-                    generations = 0
-                best_fitness = best_current_fitness
-           
-            if generations >= 50:
-                break
-            
-            self.population = self.select(fitnesses)
-            if not self.population:  # Ensure population is not empty after selection
-                break
-            new_population = []
-            for i in range(0, len(self.population), 2):
-            
-                if i+1 >= len(self.population):  # Check if there's a pair to crossover
-                    new_population.append(self.population[i])  # Add the last unpaired individual
+        for generation_count in range (600):  # 최대 500세대 실행
+            try:
+                fitnesses = [self.calculate_fitness(ind) for ind in self.population]
+                if not fitnesses:  # Check if fitnesses list is empty
                     break
-    
-                parent1, parent2 = self.population[i], self.population[i+1]
-                child1, child2 = self.crossover(parent1, parent2)
                 
-                new_population.append(self.mutate(child1))
-                new_population.append(self.mutate(child2))
+                best_current_fitness = max(fitnesses)
+                if best_fitness == float('-inf'):
+                    best_fitness = best_current_fitness - 1 
+                if best_current_fitness > best_fitness:
+                    if (best_current_fitness - best_fitness) / abs(best_fitness) < 0.01:
+                        generations += 1
+                    else:
+                        generations = 0
+                    best_fitness = best_current_fitness
+            
+                if generations >= 50:
+                    break
 
-            self.population = new_population
+                self.population = self.select(fitnesses)
+
+                if not self.population:  # Ensure population is not empty after selection
+                    break
+                new_population = []
+                for i in range(0, len(self.population), 2):
+                
+                    if i+1 >= len(self.population):  # Check if there's a pair to crossover
+                        new_population.append(self.population[i])  # Add the last unpaired individual
+                        break
         
-  
+                    parent1, parent2 = self.population[i], self.population[i+1]
+                    child1, child2 = self.crossover(parent1, parent2)
+                    new_population.append(self.mutate(child1))
+                    new_population.append(self.mutate(child2))
+ 
+
+                self.population = new_population
+            except Exception as e:
+                print(f"Error occurred at generation {generation_count + 1}: {str(e)}")
+                # 관련 변수 상태 출력
+                break  # 또는 적절한 예외 처리
+        
+        print(f"Total generations executed: {generation_count + 1}")  # 실행된 총 세대 수 출력
+        print(f"Final best fitness: {best_fitness}")
+
         best_individual = self.population[np.argmax(fitnesses)]
         print("best",best_individual)
         results = []

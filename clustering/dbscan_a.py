@@ -60,43 +60,43 @@ class DBSCANClusterer:
     #     return index_mapping
     
     
-    # def group_data_within_clusters_2(self, data, clusters, max_group_size=5):
-    #     cluster_labels = np.unique(clusters)  # DBSCAN에서 생성된 고유한 클러스터 라벨을 추출합니다.
-    #     index_mapping = np.full(len(data), -1, dtype=int)  # 각 데이터 포인트의 소그룹 ID를 저장할 배열을 초기화합니다.
-    #     group_id = 0  # 소그룹 ID를 초기화합니다.
+    def group_data_within_clusters_2(self, data, clusters, max_group_size=5):
+        cluster_labels = np.unique(clusters)  # DBSCAN에서 생성된 고유한 클러스터 라벨을 추출합니다.
+        index_mapping = np.full(len(data), -1, dtype=int)  # 각 데이터 포인트의 소그룹 ID를 저장할 배열을 초기화합니다.
+        group_id = 0  # 소그룹 ID를 초기화합니다.
 
-    #     for cluster_label in cluster_labels:
-    #         if cluster_label == -1: continue  # 노이즈 데이터(-1 라벨)는 처리하지 않습니다.
-    #         cluster_indices = np.where(clusters == cluster_label)[0]  # 특정 클러스터에 속하는 데이터 포인트의 인덱스를 찾습니다.
-    #         cluster_data = data[cluster_indices]  # 해당 클러스터의 데이터를 추출합니다.
+        for cluster_label in cluster_labels:
+            if cluster_label == -1: continue  # 노이즈 데이터(-1 라벨)는 처리하지 않습니다.
+            cluster_indices = np.where(clusters == cluster_label)[0]  # 특정 클러스터에 속하는 데이터 포인트의 인덱스를 찾습니다.
+            cluster_data = data[cluster_indices]  # 해당 클러스터의 데이터를 추출합니다.
             
-    #         if len(cluster_data) < max_group_size:
-    #             continue  # 그룹 크기가 충분하지 않으면 소그룹 형성을 건너뜁니다.
+            if len(cluster_data) < max_group_size:
+                continue  # 그룹 크기가 충분하지 않으면 소그룹 형성을 건너뜁니다.
             
-    #         # 클러스터 중심에서 가장 먼 점을 찾습니다.
-    #         cluster_center = np.mean(cluster_data, axis=0)
-    #         distances_to_center = np.linalg.norm(cluster_data - cluster_center, axis=1)
-    #         edge_point_index = np.argmax(distances_to_center)
+            # 클러스터 중심에서 가장 먼 점을 찾습니다.
+            cluster_center = np.mean(cluster_data, axis=0)
+            distances_to_center = np.linalg.norm(cluster_data - cluster_center, axis=1)
+            edge_point_index = np.argmax(distances_to_center)
             
-    #         # 유클리디안 거리를 계산하여 그 점에서 가장 가까운 점들을 그룹화합니다.
-    #         distances = np.linalg.norm(cluster_data - cluster_data[edge_point_index], axis=1)
-    #         sorted_indices = np.argsort(distances)
+            # 유클리디안 거리를 계산하여 그 점에서 가장 가까운 점들을 그룹화합니다.
+            distances = np.linalg.norm(cluster_data - cluster_data[edge_point_index], axis=1)
+            sorted_indices = np.argsort(distances)
             
-    #         assigned_group = np.full(len(cluster_data), -1)  # 클러스터 내 데이터 포인트의 그룹 할당 상태를 초기화합니다.
+            assigned_group = np.full(len(cluster_data), -1)  # 클러스터 내 데이터 포인트의 그룹 할당 상태를 초기화합니다.
 
-    #         i = 0
-    #         while i < len(sorted_indices):
-    #             if assigned_group[sorted_indices[i]] == -1:  # 아직 그룹이 할당되지 않은 경우
-    #                 current_group_members = sorted_indices[i:i + max_group_size]
-    #                 assigned_group[current_group_members] = group_id
-    #                 group_id += 1  # 새 소그룹을 시작하기 위해 소그룹 ID를 증가시킵니다.
-    #             i += max_group_size
+            i = 0
+            while i < len(sorted_indices):
+                if assigned_group[sorted_indices[i]] == -1:  # 아직 그룹이 할당되지 않은 경우
+                    current_group_members = sorted_indices[i:i + max_group_size]
+                    assigned_group[current_group_members] = group_id
+                    group_id += 1  # 새 소그룹을 시작하기 위해 소그룹 ID를 증가시킵니다.
+                i += max_group_size
             
-    #         # 최종적으로, 각 데이터 포인트의 소그룹 ID를 전체 데이터셋에 대한 인덱스 매핑으로 업데이트합니다.
-    #         for i, idx in enumerate(cluster_indices):
-    #             index_mapping[idx] = assigned_group[i]
+            # 최종적으로, 각 데이터 포인트의 소그룹 ID를 전체 데이터셋에 대한 인덱스 매핑으로 업데이트합니다.
+            for i, idx in enumerate(cluster_indices):
+                index_mapping[idx] = assigned_group[i]
 
-    #     return index_mapping
+        return index_mapping
 
 
     # def apply_algorithm_to_clusters(self, data):

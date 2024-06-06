@@ -47,7 +47,10 @@ def cluster_data():
         # 데이터 스케일링
         scaler = MinMaxScaler()
         scaled_data = scaler.fit_transform(np.array(processed_data))
-        app.logger.debug(f"스케일링된 데이터: {scaled_data}")
+        print("스케일링")
+        for row in scaled_data:
+            print("[", ", ".join(f"{x:.2f}" for x in row), "],")
+        # app.logger.debug(f"스케일링된 데이터: {scaled_data}")
     
         
         # t-SNE를 사용하여 차원 축소
